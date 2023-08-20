@@ -1,6 +1,6 @@
 const express = require('express');
-//const mongoose = require('mongoose');
-//const dotenv = require('dotenv');
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
 const { dbConnection } = require('./db/config');
 const ws = require('ws');
 const jwt = require('jsonwebtoken');
@@ -11,40 +11,36 @@ const Message =  require('./models/Message');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const fs = require('fs');
+const { getUserDataFromReq } = require('./helpers/getUserDataFromReq')
 
-//dotenv.config();
-//mongoose.connect( process.env.DB_CNN );
+// Express server
+const app = express();
+
+// Database Connection
 dbConnection();
+
+// CORS
+const corsOptions = {
+    origin: 'http://localhost:5173',
+    credentials: true
+};
+app.use( cors( corsOptions ) );
+
+// Body reading and parsing
+app.use( express.json() );
+
+// Cookie parsing
+app.use( cookieParser() );
+
+
+dotenv.config();
+
 
 
 const jwtSecret = process.env.JWT_SECRET;
 const salt = bcrypt.genSaltSync( 10 );
-const corsOptions = {
-    origin: 'http://localhost:5173',
-    credentials: true
-}
 
-const app = express();
 app.use( '/uploads', express.static( __dirname + '/uploads' ) );
-app.use( express.json() );
-app.use( cookieParser() )
-app.use( cors( corsOptions ) );
-
-const getUserDataFromReq = async ( req ) => {
-    return new Promise( ( resolve, reject ) => {
-        const token = req.cookies?.token;
-        
-        if ( token ) {
-            jwt.verify( token, jwtSecret, {}, ( error, userData ) => {
-                if ( error ) throw error;
-                resolve( userData );
-            });
-        } else {
-            reject('No token');
-        }
-    });
-
-};
 
 
 app.get('/test', ( req, res ) => {
@@ -95,7 +91,7 @@ app.post( '/login', async ( req, res ) => {
             jwt.sign( { userId: foundUser._id, username }, jwtSecret, {}, ( error, token ) => {
                 res.cookie( 'token', token, { sameSite: 'none', secure: true } ).json({
                     ok: true,
-                    id: foundUser._id,
+                    _id: foundUser._id,
                     username
                 })
             })
@@ -185,6 +181,7 @@ wss.on( 'connection', ( connection, req ) => {
     
     connection.on( 'message', async ( message ) => {
         const messageData = JSON.parse( message.toString() );
+        console.log(messageData)
         const { recipient, text, file } = messageData;
         let filename = null;
         if ( file )  {
