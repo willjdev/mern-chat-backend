@@ -16,13 +16,15 @@ router.post(
 );
 
 router.post(
-    'login',
+    '/login',
     [
         check('username', 'Username required').not().isEmpty(),
         check('password', 'Incorrect Password').isStrongPassword(),
         validateFields
     ],
     login
-)
+);
+
+
 
 module.exports = router;

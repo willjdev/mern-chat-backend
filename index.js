@@ -4,7 +4,6 @@ const { dbConnection } = require('./db/config');
 const ws = require('ws');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
-//const { generateJwt } = require('./helpers/jwt');
 const User = require('./models/User');
 const Message =  require('./models/Message');
 const cors = require('cors');
@@ -83,26 +82,6 @@ app.get( '/profile', ( req, res ) => {
     }
 
 });
-
-/* app.post( '/login', async ( req, res ) => {
-    const { username, password } = req.body;
-
-    const foundUser = await User.findOne( {username} );
-    
-    if ( foundUser ) {
-        const passOk = bcrypt.compareSync( password, foundUser.password );
-        if ( passOk ) {
-            jwt.sign( { userId: foundUser._id, username }, jwtSecret, {}, ( error, token ) => {
-                res.cookie( 'token', token, { sameSite: 'none', secure: true } ).json({
-                    ok: true,
-                    _id: foundUser._id,
-                    username
-                })
-            })
-            
-        }
-    }
-}); */
 
 app.post( '/logout', ( req, res ) => {
     res.cookie( 'token', '', { samesite: 'none', secure: true } ).json('ok')
