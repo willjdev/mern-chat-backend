@@ -1,23 +1,26 @@
 const { response } = require('express');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const User = require('./models/User');
 const { generateJwt } = require('../helpers/jwt');
 
-const createUser =  async ( req, res = response ) => {
 
-    const { username, password, email } = req.body;
+const register =  async ( req, res = response ) => {
+    
+    const salt = bcrypt.genSaltSync( 10 );
+    const { username, password } = req.body;
+
     try {
-        const newUser = await User.create({ username, password });
-        const token = await generateJwt( newUser );
-        res.cookie( 'token', token ).status(201).json({
-            ok: true,
-            token
-        });
+
+        const hashedPassword = bcrypt.hashSync( password, salt );
+        const newUser = await User.create({ username, password: hashedPassword });
+        generateJwt( newUser, username, res );
+
     } catch (error) {
         console.log(error);
-        res.json({
-            ok: false,
-            msg: 'Register error'
-        })
     }
+};
 
+module.exports = {
+    register
 }

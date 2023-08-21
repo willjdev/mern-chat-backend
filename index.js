@@ -1,6 +1,5 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const dotenv = require('dotenv');
 const { dbConnection } = require('./db/config');
 const ws = require('ws');
 const jwt = require('jsonwebtoken');
@@ -12,6 +11,9 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const fs = require('fs');
 const { getUserDataFromReq } = require('./helpers/getUserDataFromReq')
+require('dotenv').config();
+const { generateJwt } = require('./helpers/jwt');
+
 
 // Express server
 const app = express();
@@ -32,8 +34,10 @@ app.use( express.json() );
 // Cookie parsing
 app.use( cookieParser() );
 
+//Routes
+app.use( '/api/auth', require('./routes/auth') );
 
-dotenv.config();
+
 
 
 
@@ -103,11 +107,12 @@ app.post( '/logout', ( req, res ) => {
     res.cookie( 'token', '', { samesite: 'none', secure: true } ).json('ok')
 })
 
-app.post( '/register', async ( req, res ) => {
+/* app.post( '/register', async ( req, res ) => {
     const { username, password } = req.body;
     try {
         const hashedPassword = bcrypt.hashSync( password, salt );
         const newUser = await User.create({ username, password: hashedPassword });
+        generateJwt( newUser, username, res )
         jwt.sign( { userId: newUser._id, username }, jwtSecret, {}, ( error, token ) => {
             if ( error ) {
                 console.log(error);
@@ -123,7 +128,7 @@ app.post( '/register', async ( req, res ) => {
     } catch (error) {
         console.log(error);
     }
-});
+}); */
 
 const server = app.listen( 4000, () => {
     console.log('Server listening')
