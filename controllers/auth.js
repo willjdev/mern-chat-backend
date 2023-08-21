@@ -21,6 +21,27 @@ const register =  async ( req, res = response ) => {
     }
 };
 
+const login = async ( req, res = response ) => {
+
+    const { username, password } = req.body;
+
+    try {
+        
+        const foundUser = await User.findOne( {username} );
+        
+        if ( foundUser ) {
+            const passOk = bcrypt.compareSync( password, foundUser.password );
+            if ( passOk ) {
+                generateJwt( foundUser, username, res );
+            }
+        }
+
+    } catch (error) {
+        console.log(error);
+    }
+};
+
 module.exports = {
-    register
-}
+    register,
+    login
+};

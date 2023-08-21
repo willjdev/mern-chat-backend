@@ -9,9 +9,10 @@ const generateJwt = ( user, username, res ) => {
             throw new Error('Error generating token');
         }
         res.cookie( 'token', token, { sameSite: 'none', secure: true } ).status(201).json({
-            _id: user._id,
             ok: true,
-            msg: 'User registered'
+            _id: user._id,
+            username,
+            msg: 'User registered',
         });
         console.log( user );
     })

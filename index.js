@@ -84,7 +84,7 @@ app.get( '/profile', ( req, res ) => {
 
 });
 
-app.post( '/login', async ( req, res ) => {
+/* app.post( '/login', async ( req, res ) => {
     const { username, password } = req.body;
 
     const foundUser = await User.findOne( {username} );
@@ -99,36 +99,14 @@ app.post( '/login', async ( req, res ) => {
                     username
                 })
             })
+            
         }
     }
-});
+}); */
 
 app.post( '/logout', ( req, res ) => {
     res.cookie( 'token', '', { samesite: 'none', secure: true } ).json('ok')
 })
-
-/* app.post( '/register', async ( req, res ) => {
-    const { username, password } = req.body;
-    try {
-        const hashedPassword = bcrypt.hashSync( password, salt );
-        const newUser = await User.create({ username, password: hashedPassword });
-        generateJwt( newUser, username, res )
-        jwt.sign( { userId: newUser._id, username }, jwtSecret, {}, ( error, token ) => {
-            if ( error ) {
-                console.log(error);
-                throw new Error('Error generating token');
-            }
-            res.cookie( 'token', token, { sameSite: 'none', secure: true } ).status(201).json({
-                _id: newUser._id,
-                ok: true,
-                msg: 'User created',
-            })
-            console.log(newUser)
-        })
-    } catch (error) {
-        console.log(error);
-    }
-}); */
 
 const server = app.listen( 4000, () => {
     console.log('Server listening')
