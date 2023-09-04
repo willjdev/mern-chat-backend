@@ -41,7 +41,13 @@ const login = async ( req, res = response ) => {
     }
 };
 
+const logout = ( req, res = response ) => {
+    res.cookie( 'token', '', { sameSite: 'none', secure: true } ).json('ok');
+    console.log('Logged out from server')
+}
+
 module.exports = {
     register,
-    login
+    login,
+    logout
 };

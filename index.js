@@ -12,6 +12,7 @@ const fs = require('fs');
 const { getUserDataFromReq } = require('./helpers/getUserDataFromReq')
 require('dotenv').config();
 const { generateJwt } = require('./helpers/jwt');
+const { webSocketConfig } = require('./websocket/config');
 
 
 // Express server
@@ -67,7 +68,7 @@ app.get( '/people', async ( req, res ) => {
 });
 
 app.get( '/profile', ( req, res ) => {
-    const { token } = req.cookies?.token;
+    const token = req.cookies?.token;
     
     if ( token ) {
         jwt.verify( token, jwtSecret, {}, ( error, userData ) => {
@@ -83,42 +84,47 @@ app.get( '/profile', ( req, res ) => {
 
 });
 
-app.post( '/logout', ( req, res ) => {
-    res.cookie( 'token', '', { samesite: 'none', secure: true } ).json('ok')
-})
-
 const server = app.listen( 4000, () => {
     console.log('Server listening')
 });
 
+webSocketConfig( server );
+
 // Websocket Server
 
-const wss = new ws.WebSocketServer( { server } );
+
+
+/* const wss = new ws.WebSocketServer( { server } );
+
+const connectedClients = new Map();
+
 wss.on( 'connection', ( connection, req ) => {
 
     const notifyAboutOnlinePeople = () => {
-        [...wss.clients].forEach( client => {
-            client.send( JSON.stringify({
-                online: [...wss.clients].map( c => ({ userId: c.userId, username: c.username }) )
-            }) )
+        const onlineClients = Array.from( connectedClients.values()).map( (client) => ({
+            userId: client.userId,
+            username: client.username
+        }));
+        [...wss.clients].forEach( (client) => {
+            client.send( JSON.stringify({ online: onlineClients}));
         });
-    } 
-
+    }; 
+    
     connection.isAlive = true;
     connection.timer = setInterval ( () => {
         connection.ping();
         connection.deathTimer = setTimeout( () => {
-            clearInterval( connection.timer );
             connection.isAlive = false;
+            clearInterval( connection.timer );
             connection.terminate();
-            console.log('Zora')
             notifyAboutOnlinePeople();
+            console.log('Zora')
         }, 1000 );
     }, 5000 );
-
+    
     connection.on( 'pong', () => {
         clearTimeout( connection.deathTimer );
-    })
+    });
 
     // Read username and id from the cookie for this connection
     const cookies = req.headers.cookie;
@@ -136,15 +142,21 @@ wss.on( 'connection', ( connection, req ) => {
                     const { userId, username } = userData;
                     connection.userId = userId;
                     connection.username = username;
+                    connectedClients.set(connection.userId, connection);
                 })
             }
         }        
     }
+
+    connection.on( 'close', () => {
+        connectedClients.delete( connection.userId );
+        notifyAboutOnlinePeople();
+    })
     
     connection.on( 'message', async ( message ) => {
         const messageData = JSON.parse( message.toString() );
-        console.log(messageData)
         const { recipient, text, file } = messageData;
+        
         let filename = null;
         if ( file )  {
             const parts =  file.name.split('.');
@@ -165,18 +177,19 @@ wss.on( 'connection', ( connection, req ) => {
                 file: file ? filename : null,
             });
             [...wss.clients]
-                .filter( client => client.userId === recipient )
-                .forEach( c => c.send( JSON.stringify({ 
-                    text, 
-                    recipient,
-                    file: file ? filename: null,
-                    sender: connection.userId, 
-                    _id: messageDoc._id,
-                })));
-        }
+            .filter( client => client.userId === recipient )
+            .forEach( c => c.send( JSON.stringify({ 
+                text, 
+                recipient,
+                file: file ? filename: null,
+                sender: connection.userId, 
+                _id: messageDoc._id,
+            })));
+        };
+        
     });
 
     // Notify everyone about online people (when someone connects)
     notifyAboutOnlinePeople();
-});
+}); */
 
