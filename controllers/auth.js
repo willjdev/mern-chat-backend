@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const { generateJwt } = require('../helpers/jwt');
 
+const jwtSecret = process.env.JWT_SECRET;
 
 const register =  async ( req, res = response ) => {
     
@@ -44,10 +45,27 @@ const login = async ( req, res = response ) => {
 const logout = ( req, res = response ) => {
     res.cookie( 'token', '', { sameSite: 'none', secure: true } ).json('ok');
     console.log('Logged out from server')
-}
+};
+
+const profile = ( req, res = response ) => {
+    const token = req.cookies?.token;
+    
+    if ( token ) {
+        jwt.verify( token, jwtSecret, {}, ( error, userData ) => {
+            if ( error ) throw error;
+            res.json( userData );
+        });
+    } else {
+        res.status(401).json({
+            ok: false,
+            msg: 'No token found'
+        })
+    }
+};
 
 module.exports = {
     register,
     login,
-    logout
+    logout,
+    profile
 };
