@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const { check } = require('express-validator');
 const { validateFields } = require('../middlewares/field-validator');
-const { register, login, logout, profile } = require('../controllers/auth');
+const { register, login, logout, profile, people } = require('../controllers/auth');
 
 const router = Router();
 
@@ -28,6 +28,8 @@ router.post(
 router.post( '/logout', logout );
 
 router.get( '/profile', profile );
+
+router.get( '/people', people );
 
 
 
