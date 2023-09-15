@@ -29,9 +29,22 @@ const login = async ( req, res = response ) => {
     try {
         
         const foundUser = await User.findOne( {username} );
+
+        if ( !foundUser ) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'Wrong login data, try again'
+            });
+        }; 
         
         if ( foundUser ) {
             const passOk = bcrypt.compareSync( password, foundUser.password );
+            if( !passOk ) {
+                return res.status(400).json({
+                    ok: false,
+                    msg: 'Wrong login data, try again'
+                })
+            }
             if ( passOk ) {
                 generateJwt( foundUser, username, res );
             }
