@@ -82,20 +82,22 @@ const webSocketConfig = ( server ) => {
             const { recipient, text, file } = messageData;
             
             let filename = null;
-
+            let fileUrl =  null;
             // Control file attachment
 
             if ( file )  {
                 const parts =  file.name.split('.');
                 const extension = parts[parts.length - 1];
                 filename = Date.now() + '.' + extension;
-                const uploadDirectory = path.join(__dirname, '..', 'uploads\\');
+                fileUrl = file.fileURL;
+                /* const uploadDirectory = path.join(__dirname, '..', 'uploads\\');
                 const pathSave =  uploadDirectory + filename;
                 const bufferData = Buffer.from( file.data.split(',')[1], 'base64')
                 
                 fs.writeFile( pathSave, bufferData, () => {
                     console.log( 'File saved: ' + pathSave );
-                });
+                }); */
+
             };
 
             // Save and send messages
@@ -106,13 +108,15 @@ const webSocketConfig = ( server ) => {
                     recipient,
                     text,
                     file: file ? filename : null,
+                    fileURL: file ? fileUrl : null,
                 });
                 [...wss.clients]
                 .filter( client => client.userId === recipient )
                 .forEach( c => c.send( JSON.stringify({ 
-                    text, 
+                    text: text, 
                     recipient,
-                    file: file ? filename: null,
+                    file: file ? filename : null,
+                    fileURL: file ? fileUrl : null,
                     sender: connection.userId, 
                     _id: messageDoc._id,
                 })));

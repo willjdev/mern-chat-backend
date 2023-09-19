@@ -8,7 +8,8 @@ const messageSchema = Schema({
         type: Schema.Types.ObjectId, ref: 'User'
     },
     text: String,
-    file: String
+    file: String,
+    fileURL: String
 }, { timestamps: true });
 
 module.exports = model( 'Message', messageSchema );
